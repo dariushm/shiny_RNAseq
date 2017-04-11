@@ -1,11 +1,15 @@
 # shiny_RNAseq
 
-# Project Description
+## Project Description
 This app asks for three input data files, including X, Y, and Z and generates XYZ
 
-# Required package 
+## Required package 
 It is based on monocle package
 
-# Usage
+## Usage
+To plot ...
+
+## License
+TODO: Write license
 
 
