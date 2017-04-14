@@ -1,101 +1,16 @@
 library(shiny)
-shinyUI(navbarPage("Monocle Dashboard",
-                   navbarMenu("Preprocess",
-                              # Use example data
-                              tabPanel("Use example dataset",
-                                       actionButton("go.loadExample", "Load")),
-                              tabPanel("Upload data",
-                                       wellPanel("Use example data",
-                                                 selectInput("cdsExample", "Available datasets", 
-                                                             c("Human skeletal muscle myoblasts"),
-                                                             selected, multiple = FALSE, selectize, width, size)),
-                                       wellPanel("Expression Data (Numerical Matrix)",
-                                                 bsTooltip("exprUser", "rows = genes; columns = cells", 
-                                                           placement = "bottom", trigger = "hover", options = NULL),
-                                                 fileInput("exprUser", "Select File", accept = ".csv"),
-                                                 radioButtons("exprType", "Data type:",
-                                                              c("Raw counts" = "countsRaw",
-                                                                "Absolute (RPC)" = "countsAbs",
-                                                                "Absolute, sparse matrix" = "countsAbsSparse",
-                                                                "Relative (FPKM, TPM)" = "fpkm", 
-                                                                "Relative, log-transformed" = "fpkmLog")),
-                                                 checkboxGroupInput("Use absolute counts? (recommended; relative values will be converted to RPC)", "fpkmToRPC",
-                                                                    c("Yes" = TRUE, "No, I would like to stay with relative expression" = FALSE), selected, inline),
-                                                 tags$head(tags$script(HTML('Shiny.addCustomMessageHandler("jsCode", function(message) {eval(message.value);});')))),
-                                       wellPanel("Phenotype Data (Sample Annotation)",
-                                                 bsTooltip("phenoUser", 
-                                                           "rows = cells; columns = cell attributes (e.g. cell type, culture condition)", 
-                                                           placement = "bottom", trigger = "hover", options = NULL),
-                                                 fileInput("phenoUser", "Select File", accept = ".csv")),
-                                       wellPanel("Feature Data (Gene Annotation)",
-                                                 fileInput("featureUser", "Select File", accept = ".csv"),
-                                                 bsTooltip("featureUser", 
-                                                           "rows = features (e.g. genes); columns = gene attributes (e.g.biotype, gc content)", 
-                                                           placement = "bottom", trigger = "hover", options = NULL),
-                                                 fileInput("featureUser", "Select File", accept = ".csv")),
-                                       wellPanel("Create CellDataSet object",
-                                                 actionButton("go.cds", "Create")))),
-                   # Filter data
-                   navbarMenu("Filter Data",
-                              splitLayout("Set filters", 
-                                          verticalLayout(wellPanel("Filter genes",
-                                                                   numericInput("min_expr", "Minimum Expression", 0.1,
-                                                                                0, 1000, 0.001)),
-                                                         
-                                                         ## Need to account for different classes (numerical, factors, etc.)
-                                                         wellPanel("Filter cells",
-                                                                   selectInput("criteria1.col", "Attribute1", 
-                                                                               choices = pdCols),
-                                                                   textInput("criteriaA.value", "Value1", NULL)),
-                                                         wellPanel("Filter cells",
-                                                                   selectInput("criteria2.col", "Attribute2", 
-                                                                               choices = pdCols),
-                                                                   textInput("criteriaA.value", "Value2", NULL)),
-                                                         wellPanel("Filter cells",
-                                                                   selectInput("criteria3.col", "Attribute3", 
-                                                                               choices = pdCols),
-                                                                   textInput("criteria3.value", "Value3", NULL)
-                                                                   ## Need to add these values in by class type
-                                                                   ),
-                                                         wellPanel("Remove doublets",
-                                                                   ## Need to determine what a reasonable range is
-                                                                   numericInput("doubletValue", "Cutoff", 1E6,1E3, 1E8, 1E4))),
-                                          actionButton("go.distrib", "Apply Changes to Plots"))),
-                  ## Add the plot functions/options to each subtab/panel
-                    navbarMenu("Classify",
-                              tabPanel("Supervised",
-                                       numericInput("ncell", "Number of Cell Types to Define", 2, 2, 10),
-                                       
-                                       # Have it so that the number of input boxes matches the cell number the user decides
-                                       textInput("cell1", "Cell type 1: Name", NA),
-                                       textInput("gene1", "Cell type 1: Gene marker", NA),
-                                       textInput("cell2", "Cell type 2: Name", NA),
-                                       textInput("gene2", "Cell type 2: Gene marker", NA),
-                                       numericInput("min_expr", "Min. Expression", 0.1, 0, Inf)),
-                              tabPanel("Semi-supervised",
-                                       numericInput("mean_expr", "Min. Mean Expression", 0.1, 0, Inf),
-                                       numericInput("qval", "q-value cutoff", 0.05, 0, 1)),
-                              tabPanel("Unsupervised (Imputing)",
-                                       numericInput("freq", "Frequency Threshold", 0.1, 0, 1)),
-                   navbarMenu("Pseudotime",
-                              tabPanel("Supervised",
-                                       numericInput("mean_expr", "Min. Mean Expression", 0.1, 0, Inf),
-                                       numericInput("qval", "q-value cutoff", 0.05, 0, 1),
-                                       ## Needs to allow multiple, comma-separated genes
-                                       textInput("genesUser", "Selected Genes", NA),
-                                       numericInput("num_cells_expressed", "Min. Number of Cells with Gene Expressed", 10, 0, Inf)),
-                              tabPanel("Unsupervised"),
-                              tabPanel("Semi-supervised"),
-                              tabPanel("Reconstructed",
-                                       selectInput("color_by", "Color by", 
-                                                   c("Hours", "Pseudotime", "State", "Time")),
-                                       selectInput("facet_by", "Facet by", 
-                                                   c("Hours", "Pseudotime", "State", "Time")),
-                                       numericInput("nroot", "Number of roots", 3, 1, 10))),
-                   navbarMenu("Identify",
-                              tabPanel("Simple"),
-                              tabPanel("Multifactorial"),
-                              tabPanel("Pseudotime"),
-                              tabPanel("Trajectory Branch")))))
-        )
-  
+library(shinyBS)
+
+shinyUI({
+  navbarPage("Monocle Dashboard",
+             navbarMenu("Preprocess",
+                        # Use example data
+                        tabPanel("Upload data",
+                                 wellPanel("Use example data",
+                                           selectInput("cdsExample", "Available datasets", 
+                                                       c("hsmm", "lung"))),
+                                 wellPanel(tableOutput("selected"))
+                        ) 
+             )
+  )
+})
