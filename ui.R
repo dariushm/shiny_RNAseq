@@ -1,5 +1,8 @@
 library(shiny)
-shinyUI(navbarPage("Monocle Dashboard",
+library(shinyBS)
+
+shinyUI({
+  navbarPage("Monocle Dashboard",
                    navbarMenu("Preprocess",
                               # Use example data
                               tabPanel("Use example dataset",
@@ -7,20 +10,18 @@ shinyUI(navbarPage("Monocle Dashboard",
                               tabPanel("Upload data",
                                        wellPanel("Use example data",
                                                  selectInput("cdsExample", "Available datasets", 
-                                                             c("Human skeletal muscle myoblasts"),
-                                                             selected, multiple = FALSE, selectize, width, size)),
+                                                             c("hsmm", "lung"))),
                                        wellPanel("Expression Data (Numerical Matrix)",
                                                  bsTooltip("exprUser", "rows = genes; columns = cells", 
                                                            placement = "bottom", trigger = "hover", options = NULL),
-                                                 fileInput("exprUser", "Select File", accept = ".csv"),
                                                  radioButtons("exprType", "Data type:",
                                                               c("Raw counts" = "countsRaw",
                                                                 "Absolute (RPC)" = "countsAbs",
                                                                 "Absolute, sparse matrix" = "countsAbsSparse",
                                                                 "Relative (FPKM, TPM)" = "fpkm", 
-                                                                "Relative, log-transformed" = "fpkmLog")),
+                                                                "Relative, log-tbsransformed" = "fpkmLog")),
                                                  checkboxGroupInput("Use absolute counts? (recommended; relative values will be converted to RPC)", "fpkmToRPC",
-                                                                    c("Yes" = TRUE, "No, I would like to stay with relative expression" = FALSE), selected, inline),
+                                                                    c("Yes" = TRUE, "No, I would like to stay with relative expression" = FALSE)),
                                                  tags$head(tags$script(HTML('Shiny.addCustomMessageHandler("jsCode", function(message) {eval(message.value);});')))),
                                        wellPanel("Phenotype Data (Sample Annotation)",
                                                  bsTooltip("phenoUser", 
@@ -96,6 +97,7 @@ shinyUI(navbarPage("Monocle Dashboard",
                               tabPanel("Simple"),
                               tabPanel("Multifactorial"),
                               tabPanel("Pseudotime"),
-                              tabPanel("Trajectory Branch")))))
-        )
+                              tabPanel("Trajectory Branch"))))}
+  )
+        
   

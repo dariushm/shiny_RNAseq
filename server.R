@@ -2,21 +2,33 @@ library(shiny)
 function(input, output, session) {
   options(shiny.maxRequestSize = 100*1024^2) 
   library(monocle)
-  
-  #### Preprocessing I: Data upload
-  observeEvent(input$cdsExample) {
-    if (input$cdsExample == "Human skeletal muscle myoblasts") {
-      library(HSMMSingleCell)
-      exprExample <- load("HSMM_expr_matrix")
-      featureExample <- load("HSMM_gene_annotation")
-      phenoExample <- load("HSMM_sample_sheet")
-      pd <- new("AnnotatedDataFrame", data = phenoExample)
-      fd <- new("AnnotatedDataFrame", data = featureExample)
-      cds <- newCellDataSet(as.matrix(exprExample), pd, fd, expressionFamily = negbinomial())
+  library(HSMMSingleCell)
+ 
+   #### Preprocessing I: Data upload
+  input$cdsExample=reactive({
+    if (input$cdsExample == "hsmm") {
+      data("HSMM_expr_matrix", "HSMM_gene_annotation", "HSMM_sample_sheet")
+      cds <- newCellDataSet(as.matrix(HSMM_expr_matrix), 
+                            new("AnnotatedDataFrame", data = HSMM_sample_sheet),
+                            new("AnnotatedDataFrame", data = HSMM_gene_annotation),
+                            expressionFamily = negbinomial())
       cds <- estimateSizeFactors(cds)
       cds <- estimateDispersions(cds)
     }
-  }
+    if (input$cdsExample=="lung") {
+          extPath=file.path(system.file(package="monocle"), "extdata")
+          load(file.path(extPath, "lung_phenotype_data.RData"))
+           load(file.path(extPath, "lung_exprs_data.RData"))
+           load(file.path(extPath, "lung_feature_data.RData"))
+           cds=newCellDataSet(lung_exprs_data[, row.names(lung_phenotype_data)], 
+                              new("AnnotatedDataFrame", data = lung_phenotype_data),
+                              new("AnnotatedDataFrame", data = lung_feature_data),
+                              lowerDetectionLimit=1,
+                              expressionFamily=negbinomial.size()))
+           cds <- estimateSizeFactors(cds)
+           cds <- estimateDispersions(cds)
+    }
+  })
   pRaw <- reactive({
     pheno <- input$phenoUser
     if (is.null(pheno)) {return(NULL)}
