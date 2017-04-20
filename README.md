@@ -1,13 +1,12 @@
 # shiny_RNAseq
 
 ## Project Description
-This app asks for three input data files, including X, Y, and Z and generates XYZ
+Graphical implementation of Monocle vignette functions to allow user interaction with data transformation and filtering steps. 
 
 ## Required package 
-It is based on monocle package
+Monocle, HSMM, Shiny, ShinyBS
 
 ## Usage
-To plot ...
 
 ## License
 TODO: Write license
