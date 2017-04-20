@@ -3,7 +3,7 @@ library(shinyBS)
 library(monocle)
 library(HSMMSingleCell)
 
-function(input, output) {
+function(input, output, session) {
   options(shiny.maxRequestSize = 100*1024^2) 
   
   #### Preprocessing I: Data upload
@@ -37,4 +37,34 @@ function(input, output) {
     }
   })
   
+  ###Step2.Select data that should be filtered
+  observeEvent(input$layer, {
+    x=input$layer
+    if(is.null(x))
+      x=character(0)
+    if (x=="fData") {
+      y=colnames(fData(cds))
+      updateSelectInput(session, "labels",
+                        label=paste("Select input label", length(y)),
+                        choices=y, 
+                        selected=tail(y, 1))
+      }
+    if (x=="pData") {
+      y=colnames(pData(cds))
+      updateSelectInput(session, "labels",
+                        label=paste("Select input label", length(y)),
+                        choices=y, 
+                        selected=tail(y, 1))
+    }
+    if (x=="eLevel") {
+      y=rownames(exprs(cds))
+      updateSelectInput(session, "labels",
+                        label=paste("Select input label", length(y)),
+                        choices=y, 
+                        selected=tail(y, 1))
+    }
+    
+  ####Step3. Brushed points for data selection
+
+  })
 }

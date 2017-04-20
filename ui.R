@@ -11,6 +11,15 @@ shinyUI({
                                                        c("hsmm", "lung"))),
                                  wellPanel(tableOutput("selected"))
                         ) 
-             )
+             ),
+             navbarMenu("Filtering", 
+                        tabPanel("Select variable",
+                                 wellPanel("XX",
+                                           checkboxGroupInput("layer", "Select level to work with", 
+                                                       c("pData", "fData", "eLevel")),
+                                           selectInput("labels", "Rowheaders", 
+                                                       c("pData", "fData", "eLevel"))))
+                                 
+  )
   )
 })
