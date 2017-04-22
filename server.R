@@ -3,8 +3,8 @@ function(input, output, session) {
   options(shiny.maxRequestSize = 100*1024^2) 
   library(monocle)
   library(HSMMSingleCell)
- 
-   #### Preprocessing I: Data upload
+  
+  #### Preprocessing I: Data upload
   input$cdsExample=reactive({
     if (input$cdsExample == "hsmm") {
       data("HSMM_expr_matrix", "HSMM_gene_annotation", "HSMM_sample_sheet")
@@ -16,15 +16,15 @@ function(input, output, session) {
       cds <- estimateDispersions(cds)
     }
     if (input$cdsExample=="lung") {
-          extPath=file.path(system.file(package="monocle"), "extdata")
+          extPath=file.path(system.file(package = "monocle"), "extdata")
           load(file.path(extPath, "lung_phenotype_data.RData"))
            load(file.path(extPath, "lung_exprs_data.RData"))
            load(file.path(extPath, "lung_feature_data.RData"))
-           cds=newCellDataSet(lung_exprs_data[, row.names(lung_phenotype_data)], 
+           cds <- newCellDataSet(lung_exprs_data[ , rownames(lung_phenotype_data)], 
                               new("AnnotatedDataFrame", data = lung_phenotype_data),
                               new("AnnotatedDataFrame", data = lung_feature_data),
                               lowerDetectionLimit=1,
-                              expressionFamily=negbinomial.size()))
+                              expressionFamily = negbinomial.size())
            cds <- estimateSizeFactors(cds)
            cds <- estimateDispersions(cds)
     }
