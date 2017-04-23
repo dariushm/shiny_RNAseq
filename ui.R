@@ -1,4 +1,5 @@
 library(shiny)
+library(shinyBS)
 
 shinyUI({
   navbarPage("Monocle Dashboard",
