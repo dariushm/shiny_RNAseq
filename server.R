@@ -1,14 +1,17 @@
 library(shiny)
 library(monocle)
 
-server = function(input, output) {
+server = function(input, output,session) {
   options(shiny.maxRequestSize = 100 * 1024 ^ 2)
+
+  #### Preprocessing I: Data upload
+  observe({
   ma <- reactive({
-    matrix <- input$matrix
-    if (is.null(matrix)) {
+    my_matrix <- input$matrix
+    if (is.null(my_matrix)) {
       return(NULL)
     }
-    read.csv(matrix$datapath, header = TRUE)
+    read.csv(my_matrix$datapath, header = TRUE)
   })
 
   ph <- reactive({
@@ -84,4 +87,12 @@ server = function(input, output) {
     })
   })
 
+  #cds <- newCellDataSet(as.matrix(ma),
+  #                   phenoData = pheno,
+  #                   featureData = feature)
+
+  #output$selected=renderTable(head(cds))
+
+
+})
 }
