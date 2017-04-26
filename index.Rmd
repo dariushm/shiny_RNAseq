@@ -1,0 +1,133 @@
+---
+title: "LensCleanR"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    social: menu
+runtime: shiny
+---
+
+```{r global, include=FALSE}
+# load data in 'global' chunk so it can be shared by all users of the dashboard
+library(flexdashboard)
+library(shiny)
+library(shinyBS)
+library(monocle)
+library(HSMMSingleCell)
+options(shiny.maxRequestSize = 100*1024^2)
+```
+
+Load
+=====================================  
+    
+Sidebar {data-width=150}
+-------------------------------------
+
+```{r}
+### Choose dataset
+selectInput("dataset", "Choose dataset", c("hsmm", "lung"))
+actionButton("upload", "Upload") ### this will also estimate size factors and dispersion
+actionButton("preview", "Data Preview") 
+```
+
+Column {data-width=400}
+-------------------------------------
+
+```{r}
+cds <- eventReactive(input$upload, {
+  ### HSMM example dataset
+  if (input$dataset == "hsmm") {
+    data("HSMM_expr_matrix", "HSMM_gene_annotation", "HSMM_sample_sheet")
+    cds <- newCellDataSet(
+      as.matrix(HSMM_expr_matrix), 
+      new("AnnotatedDataFrame", data = HSMM_sample_sheet),
+      new("AnnotatedDataFrame", data = HSMM_gene_annotation),
+      lowerDetectionLimit = 0.1,
+      expressionFamily = negbinomial())
+  }
+  
+  ### Lung example dataset
+  if (input$dataset == "lung") {
+    extPath <- file.path(system.file(package = "monocle"), "extdata")
+    load(file.path(extPath, "lung_phenotype_data.RData"))
+    load(file.path(extPath, "lung_exprs_data.RData"))
+    load(file.path(extPath, "lung_feature_data.RData"))
+    cds <- newCellDataSet(
+      lung_exprs_data[ , rownames(lung_phenotype_data)], 
+      new("AnnotatedDataFrame", data = lung_phenotype_data),
+      new("AnnotatedDataFrame", data = lung_feature_data),
+      lowerDetectionLimit = 1,
+      expressionFamily = negbinomial.size())
+  }
+  
+  cds <- estimateSizeFactors(cds)
+  cds <- estimateDispersions(cds)
+  return(cds)
+})
+
+previewData <- eventReactive(input$preview, {
+  renderTable(head(pData(cds)))
+})
+
+mainPanel(tableOutput("previewData"))
+```
+
+Filter
+=====================================  
+    
+Sidebar {data-width=150}
+-------------------------------------
+
+```{r}
+### Choose data to filter (pheno, feature, exprs)
+checkboxGroupInput("filterType", "Filter: Choose data type",
+                   c("pData", "fData", "exprsData"))
+
+### Choose column of data to filter
+selectInput("filterVar", "Filter: Choose variable",
+            c("pData", "fData", "exprsData"))
+```
+
+Column {data-width=400}
+-------------------------------------
+
+### Quantitative
+```{r}
+observe({
+  x <- input$filterType
+  
+  ### Use character(0) to remove all choices
+  if (is.null(x))
+    x <- character(0)
+  ### Can also set the label and select items
+  updateSelectInput(session, "filterVar",
+                    paste("Filter: Choose variable", length(x)),
+                    x, tail(x, 1))
+  })
+```
+
+### Qualitative
+```{r eval=FALSE}
+### Brushed points for data selection
+dataset <- reactive({
+  diamonds[sample(nrow(diamonds), input$sampleSize),]
+})
+
+renderPlot({
+  p <- ggplot(dataset(), aes_string(x=input$x, y=input$y)) + geom_point()
+  
+  if (input$color != 'None')
+    p <- p + aes_string(color=input$color)
+  
+  facets <- paste(input$facet_row, '~', input$facet_col)
+  if (facets != '. ~ .')
+    p <- p + facet_grid(facets)
+  
+  if (input$jitter)
+    p <- p + geom_jitter()
+  if (input$smooth)
+    p <- p + geom_smooth()
+  
+  print(p)
+})
+```
