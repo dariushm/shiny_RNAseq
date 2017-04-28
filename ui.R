@@ -50,8 +50,10 @@ shinyUI({
                      checkboxInput('header', 'Header', TRUE)
                    ),
                    mainPanel(tabsetPanel(
+                     id = "tabs",
                      tabPanel(
-                       "Pheno",
+                       title = "Pheno",
+                       value = "phenotab",
                        splitLayout(
                          conditionalPanel(condition = "output.phload", uiOutput(paste0('pheno_col', 1)), div(style = "height:200px;")),
                          conditionalPanel(condition = "output.phload", uiOutput(paste0('pheno_col', 2)), div(style = "height:200px;")),
@@ -62,10 +64,13 @@ shinyUI({
                          conditionalPanel(condition = "output.phload", uiOutput(paste0('pheno_col', 7)), div(style = "height:200px;")),
                          conditionalPanel(condition = "output.phload", uiOutput(paste0('pheno_col', 8)), div(style = "height:200px;"))
                        ),
-                       tableOutput("pd")
+                       tableOutput("pd"),
+                       actionButton("acceptPheno", "Go to Feature"),
+                       p("Click the button to update the titles for your PhenoData.")
                      ),
                      tabPanel(
-                       "Feature",
+                       title = "Feature",
+                       value = "featuretab",
                        splitLayout(
                          conditionalPanel(condition = "output.fdload", uiOutput(paste0('feature_col', 1)), div(style = "height:200px;")),
                          conditionalPanel(condition = "output.fdload", uiOutput(paste0('feature_col', 2)), div(style = "height:200px;")),
@@ -76,7 +81,16 @@ shinyUI({
                          conditionalPanel(condition = "output.fdload", uiOutput(paste0('feature_col', 7)), div(style = "height:200px;")),
                          conditionalPanel(condition = "output.fdload", uiOutput(paste0('feature_col', 8)), div(style = "height:200px;"))
                        ),
-                       tableOutput("fd")
+                       tableOutput("fd"),
+                       actionButton("acceptFeature", "Go to Final Check"),
+                       p(
+                         "Click the button to update the titles for your FeatureData and go to Final Check."
+                       )
+                     ),
+                     tabPanel(
+                       title = "Final Check",
+                       value = "finalchecktab",
+                       h4("To be constructed...")
                      )
                    ))
                  )
