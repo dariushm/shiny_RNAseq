@@ -1,25 +1,38 @@
 library(shiny)
 library(monocle)
-
+library(shinyjs)
 server = function(input, output, session) {
   options(shiny.maxRequestSize = 100 * 1024 ^ 2)
   
+  shinyjs::disable("phenodata")
+  shinyjs::disable("featuredata")
   #### Preprocessing I: Data upload
   observe({
     ma <- reactive({
       my_matrix <- input$matrix
+      print(head(my_matrix))
       if (is.null(my_matrix)) {
         return(NULL)
       }
-      read.csv(my_matrix$datapath, header = TRUE)
+      read.csv(my_matrix$datapath, header = TRUE, stringsAsFactors = FALSE)
     })
+    
+    observeEvent(input$matrix,
+                 {
+                   shinyjs::enable("phenodata")
+                 })
+    observeEvent(input$phenodata,
+                 {
+                   shinyjs::enable("featuredata")
+                   
+                 })  
     
     ph <- reactive({
       pheno <- input$phenodata
       if (is.null(pheno)) {
         return(NULL)
       }
-      read.csv(pheno$datapath, header = TRUE)
+      read.csv(pheno$datapath, header = TRUE, stringsAsFactors = FALSE)
     })
     
     output$phload <- reactive({
@@ -27,7 +40,7 @@ server = function(input, output, session) {
     })
     outputOptions(output, 'phload', suspendWhenHidden = FALSE)
     
-    ?reactiveValues()
+    # ?reactiveValues()
     
     renamed_ph = reactive({
       pheno = ph()
@@ -52,7 +65,7 @@ server = function(input, output, session) {
     })
     output$pd <- renderTable({
       pheno = renamed_ph()
-      # print(pheno)
+      #print(pheno)
       if (is.null(pheno)) {
         p = NULL
       } else {
@@ -87,7 +100,7 @@ server = function(input, output, session) {
       if (is.null(feature)) {
         return(NULL)
       }
-      read.csv(feature$datapath, header = TRUE)
+      read.csv(feature$datapath, header = TRUE, stringsAsFactors = FALSE)
       
     })
     
@@ -103,9 +116,13 @@ server = function(input, output, session) {
     
     renamed_fd = reactive({
       feature = fd()
+      if (is.null(feature)){
+        return(NULL)
+      }
       cols = 1:5
       cn_f = paste0('feature', cols)
-      print(names(input))
+      print("printing names")
+      #print(names(input))
       cnames_f = lapply(cn_f, function(x) {
         input[[x]]
       })
@@ -118,6 +135,7 @@ server = function(input, output, session) {
       })
       print(cnames_f)
       if (all(cnames_f != "")) {
+        print(class(feature))
         colnames(feature) = cnames_f
       }
       feature
@@ -153,12 +171,48 @@ server = function(input, output, session) {
     observeEvent(input$acceptFeature, {
       updateTabsetPanel(session, "tabs", selected = "finalchecktab")
     })
-    #cds <- newCellDataSet(as.matrix(ma),
-    #                   phenoData = pheno,
-    #                   featureData = feature)
     
-    #output$selected=renderTable(head(cds))
-    
-    
+    observeEvent(input$FinalCheck, {
+      my_matrix = ma()
+      pheno = renamed_ph()
+      feature = renamed_fd()
+      print("matrix is ")
+      print(head(my_matrix))
+      
+      print("pheno is ")
+      print(head(pheno))
+      
+      print("feature is ")
+      print(head(feature))
+      
+      cn = colnames(my_matrix)[-1]
+      if ( all(cn == pheno[,1])) {
+        msg1 = 'matrix and pheno info match'
+      } else {
+        msg1 = 'matrix and pheno info do not match'
+      }
+      output$pheno_mat_match = renderText({
+        msg1
+      })      
+      mat1 = my_matrix[,1]
+      if ( all(mat1==feature[,1])) {
+        msg2 = 'matrix and feature data match'
+      } else {
+        msg2 = "matrix and feature data do not match"
+      }
+      output$feat_mat_match = renderText({
+        msg2
+      })
+      
+
+      #cds <- newCellDataSet(as.matrix(ma),
+      #                   phenoData = pheno,
+      #                   featureData = feature)
+      
+      #output$selected=renderTable(head(cds))
+      
+      
+    })
   })
 }
+

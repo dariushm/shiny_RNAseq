@@ -1,8 +1,10 @@
 library(shiny)
 library(shinyBS)
+library(shinyjs)
 
 shinyUI({
   navbarPage(
+    shinyjs::useShinyjs(),
     "Monocle Dashboard",
     navbarMenu("Preprocess",
                # Use example data
@@ -90,8 +92,13 @@ shinyUI({
                      tabPanel(
                        title = "Final Check",
                        value = "finalchecktab",
-                       h4("To be constructed...")
-                     )
+                       actionButton("FinalCheck", "Check Input Files"),
+                        p(
+                         "Click the button to check if the Gene name and Cell types match among all input files."
+                        ),
+                        textOutput("pheno_mat_match"),
+                        textOutput("feat_mat_match")
+                      )
                    ))
                  )
                )),
